@@ -3,6 +3,9 @@ import { useLoader, useFrame } from '@react-three/fiber'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import * as THREE from 'three'
 
+// Import lights from three
+import { AmbientLight, DirectionalLight } from 'three'
+
 export function CoffeeOBJ(props) {
   const meshRef = useRef()
   const [model, setModel] = useState(null)
@@ -54,16 +57,24 @@ export function CoffeeOBJ(props) {
   if (!model) return null
 
   return (
-    <mesh
-      ref={meshRef}
-      geometry={model.geometry}
-      material={model.material}
-      scale={0.35}
-      rotation={[0, Math.PI / 2, 0]}
-      castShadow
-      receiveShadow
-      {...props}
-    />
+    <>
+      <ambientLight intensity={0.3} />
+      <directionalLight
+        intensity={0.7}
+        position={[5, 5, 5]}
+        castShadow
+      />
+      <mesh
+        ref={meshRef}
+        geometry={model.geometry}
+        material={model.material}
+        scale={0.4}
+        rotation={[0, Math.PI / 2, 0]}
+        castShadow
+        receiveShadow
+        {...props}
+      />
+    </>
   )
 }
 

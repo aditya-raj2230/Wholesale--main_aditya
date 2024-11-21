@@ -112,7 +112,8 @@ const Product = ({
             gl={{ clearColor: '#ffffff' }}
           >
             <Suspense fallback={<Loader />}>
-              <Scene texturePath={texturePath} />
+              <Scene texturePath={texturePath}
+              />
             </Suspense>
           </Canvas>
         </div>
