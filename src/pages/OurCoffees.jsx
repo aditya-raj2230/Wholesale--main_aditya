@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Product from '../models/Product'
-import Wholesale from './Wholesale'
+
 
 function OurCoffees() {
   const [activeSection, setActiveSection] = useState(0)
