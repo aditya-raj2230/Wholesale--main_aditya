@@ -1,83 +1,131 @@
-import { useMatcapTexture, Center, Text3D, OrbitControls } from '@react-three/drei'
-// import { Perf } from 'r3f-perf';
-import { useEffect, useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
+import React, { useRef, useMemo, useCallback } from 'react';
+import { useMatcapTexture, Center, Text3D, OrbitControls } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import Scene from './Scene';
 
-const torusGeometry = new THREE.TorusGeometry(1, 0.6, 16, 32)
-const material = new THREE.MeshMatcapMaterial()
+export default function Experience() {
+    const [matcapTexture] = useMatcapTexture('7B5254_E9DCC7_B19986_C8AC91', 256);
+    const material = useMemo(() => new THREE.MeshMatcapMaterial({ matcap: matcapTexture }), [matcapTexture]);
+    
+    // Memoize Text3D configuration
+    const textConfig = useMemo(() => ({
+        font: './fonts/helvetiker_regular.typeface.json',
+        size: 1,
+        height: 0.25,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.03,
+        bevelSize: 0.03,
+        bevelOffset: 0,
+        bevelSegments: 5
+    }), []);
 
-export default function Experience()
-{
-    const donuts = useRef([])
+    // Memoize OrbitControls configuration
+    const controlsConfig = useMemo(() => ({
+        minPolarAngle: Math.PI / 2,
+        maxPolarAngle: Math.PI / 2,
+        enablePan: false,
+        enableZoom: false,
+        target: [0, 0, 0]
+    }), []);
 
-    const [ matcapTexture ] = useMatcapTexture('7B5254_E9DCC7_B19986_C8AC91', 256)
+    // Memoize cloud data
+    const cloudData = useMemo(() => {
+        const numClouds = 5;
+        const radius = 3;
+        return Array.from({ length: numClouds }, (_, i) => ({
+            id: `cloud-${i}`,  // Add unique ID for React keys
+            position: new THREE.Vector3(
+                Math.cos((i / numClouds) * Math.PI * 2) * radius,
+                2 + Math.sin((i / numClouds) * Math.PI * 2) * 1.5,
+                Math.sin((i / numClouds) * Math.PI * 2) * radius
+            ),
+            velocity: new THREE.Vector2(
+                (Math.random() - 0.5) * 0.02,
+                (Math.random() - 0.5) * 0.02
+            ),
+            bounds: {
+                x: [-6, 6],
+                y: [-1, 3.5],
+                z: [-6, 6]
+            }
+        }));
+    }, []);
 
-    useFrame((state, delta) =>
-    {
-        for(const donut of donuts.current)
-        {
-            donut.rotation.y += delta * 0.2
+    const cloudRefs = useRef([]);
+
+    // Memoize update function to reduce garbage collection
+    const updateCloud = useCallback((cloud, data, delta) => {
+        if (!cloud) return;
+
+        // Update position with velocity
+        cloud.position.x += data.velocity.x * delta * 60;
+        cloud.position.y += data.velocity.y * delta * 60;
+
+        // Optimized boundary checks
+        if (cloud.position.x <= data.bounds.x[0]) {
+            cloud.position.x = data.bounds.x[0];
+            data.velocity.x = Math.abs(data.velocity.x);
+        } else if (cloud.position.x >= data.bounds.x[1]) {
+            cloud.position.x = data.bounds.x[1];
+            data.velocity.x = -Math.abs(data.velocity.x);
         }
-    })
 
-    useEffect(() =>
-    {
-        matcapTexture.colorSpace = THREE.SRGBColorSpace
-        matcapTexture.needsUpdate = true
+        if (cloud.position.y <= data.bounds.y[0]) {
+            cloud.position.y = data.bounds.y[0];
+            data.velocity.y = Math.abs(data.velocity.y);
+        } else if (cloud.position.y >= data.bounds.y[1]) {
+            cloud.position.y = data.bounds.y[1];
+            data.velocity.y = -Math.abs(data.velocity.y);
+        }
+    }, []);
 
-        material.matcap = matcapTexture
-        material.needsUpdate = true
-    }, [])
+    // Optimized frame update
+    useFrame((state, delta) => {
+        cloudRefs.current.forEach((cloud, index) => {
+            updateCloud(cloud, cloudData[index], delta);
+        });
+    });
 
-    return <>
+    // Memoize cloud component
+    const Cloud = useCallback(({ data, index }) => (
+        <group 
+            key={data.id}
+            ref={el => cloudRefs.current[index] = el}
+            position={data.position}
+        >
+            <Scene scale={0.5 + Math.random() * 0.2} />
+        </group>
+    ), []);
 
-        {/* <Perf position="top-left" /> */}
-
-        <OrbitControls 
-            makeDefault 
-            minPolarAngle={Math.PI / 2} 
-            maxPolarAngle={Math.PI / 2} 
-            enablePan={false} 
-            enableZoom={false} 
-        />
-
-        <Center position={[0, 0, 0]} rotation={[0, Math.PI * 0.15, 0]}>
+    // Memoize Text component
+    const TextComponent = useCallback(() => (
+        <group rotation={[0, Math.PI * 0.15, 0]}>
             <Text3D
-                material={ material }
-                font="./fonts/helvetiker_regular.typeface.json"
-                size={ 0.75 }
-                height={ 0.2 }
-                curveSegments={ 12 }
-                bevelEnabled
-                bevelThickness={ 0.02 }
-                bevelSize={ 0.02 }
-                bevelOffset={ 0 }
-                bevelSegments={ 5 }
+                material={material}
+                {...textConfig}
             >
                 WHOLESALE COFFEE
             </Text3D>
-        </Center>
+            <OrbitControls {...controlsConfig} />
+        </group>
+    ), [material, textConfig, controlsConfig]);
 
-        { [...Array(100)].map((value, index) =>
-            <mesh
-                ref={ (element) => donuts.current[index] = element }
-                key={ index }
-                geometry={ torusGeometry }
-                material={ material }
-                position={ [
-                    (Math.random() - 0.5) * 13,
-                    (Math.random() - 0.5) * 13,
-                    (Math.random() - 0.5) * 13
-                ] }
-                scale={ 0.2 + Math.random() * 0.2 }
-                rotation={ [
-                    0,
-                    Math.PI * 0.15 + (Math.random() * Math.PI),
-                    0
-                ] }
-            />
-        ) }
+    return (
+        <>
+            {/* Render clouds */}
+            {cloudData.map((data, index) => (
+                <Cloud 
+                    key={data.id}
+                    data={data}
+                    index={index}
+                />
+            ))}
 
-    </>
+            <Center position={[0, 0, 0]}>
+                <TextComponent />
+            </Center>
+        </>
+    );
 }
