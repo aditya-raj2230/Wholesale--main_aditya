@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, useCallback } from 'react';
 import { useMatcapTexture, Center, Text3D, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import Scene from './Scene';
+import Scene from './SceneCloud';
 
 export default function Experience() {
     const [matcapTexture] = useMatcapTexture('7B5254_E9DCC7_B19986_C8AC91', 256);

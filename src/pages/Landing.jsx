@@ -1,30 +1,24 @@
-import React, { Suspense, useState } from 'react'
+import React, { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import Experience from '../models/Experience2'
-import LoadingScreen from '../components/LoadingScreen'
 import { Preload } from '@react-three/drei'
+import Experience from '../models/Experience2'
+import Cat from '../models/Scene'
+import LoadingScreen from '../components/LoadingScreen'
+import Donuts from '../components/Donut'
+import MovingComponent from '../components/MovingComponent'
+import StaticComponent from '../components/StaticComponent'
 
 const Landing = () => {
     return (
         <>
             <LoadingScreen />
-            
-            <div className="w-screen h-screen bg-gray-300">
-                <Canvas
-                    className="w-full h-full"
-                    camera={{
-                        fov: 45,
-                        near: 0.1,
-                        far: 200,
-                        position: [5, 2, 8]
-                    }}
-                    gl={{ clearColor: '#FFB6C1' }}
-                >
-                    <Suspense fallback={null}>
-                        <Preload all />
-                        <Experience />
-                    </Suspense>
-                </Canvas>
+            <div className="w-screen h-screen bg-gray-300 relative">
+                <div className="absolute inset-0">
+                    <StaticComponent/>
+                </div>
+                <div className="absolute inset-0">
+                    <MovingComponent/>
+                </div>
             </div>
         </>
     )
