@@ -22,8 +22,27 @@ export default function Experience() {
     return <>
         {/* <Perf position="top-left" /> */}
 
+        {/* Add ambient light for general illumination */}
+        <ambientLight intensity={0.5} />
+
+        {/* Add a directional light to simulate sunlight */}
+        <directionalLight 
+            position={[10, 10, 5]} 
+            intensity={1} 
+            castShadow 
+        />
+
+        {/* Add a point light for localized lighting effect */}
+        <pointLight 
+            position={[-10, -10, -10]} 
+            intensity={0.5} 
+        />
+
         <Text matcapTexture={matcapTexture} />
-        <Cat/>
+        <Cat 
+            position={[4, -2, 0]}  // Adjust the position values as needed
+            rotation={[0, -Math.PI / 2.5, 0]}  // Adjust the rotation values as needed
+        />
         {/* <Donuts material={material} /> */}
     </>
 }

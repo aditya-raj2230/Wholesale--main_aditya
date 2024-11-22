@@ -1,9 +1,10 @@
-import { Center, Text3D } from '@react-three/drei'
+import { Center, Text3D, useMatcapTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { useEffect } from 'react'
 
-export default function Text({ matcapTexture }) {
+export default function Text() {
     const material = new THREE.MeshMatcapMaterial()
+    const [matcapTexture] = useMatcapTexture('7B5254_E9DCC7_B19986_C8AC91', 256)
 
     useEffect(() => {
         matcapTexture.colorSpace = THREE.SRGBColorSpace
