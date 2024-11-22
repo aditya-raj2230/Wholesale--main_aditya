@@ -1,21 +1,15 @@
-import React, { Suspense, useState, useCallback } from 'react'
-import { Canvas } from '@react-three/fiber';
-import Experience from '../models/Experience';
-import LoadingScreen from '../components/LoadingScreen';
-import { Preload } from '@react-three/drei';
+import React, { Suspense, useState } from 'react'
+import { Canvas } from '@react-three/fiber'
+import Experience from '../models/Experience'
+import LoadingScreen from '../components/LoadingScreen'
+import { Preload } from '@react-three/drei'
 
 const Landing = () => {
-    const [started, setStarted] = useState(false)
-    
-    const handleStarted = useCallback(() => {
-        setStarted(true)
-    }, [])
-
     return (
         <>
-            {!started && <LoadingScreen onStarted={handleStarted} />}
+            <LoadingScreen />
             
-            <section className={`w-screen h-screen bg-pink-100 transition-opacity duration-1000 ${started ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="w-screen h-screen bg-pink-100">
                 <Canvas
                     className="w-full h-full"
                     camera={{
@@ -27,13 +21,13 @@ const Landing = () => {
                     gl={{ clearColor: '#FFB6C1' }}
                 >
                     <Suspense fallback={null}>
-                        <Experience />
                         <Preload all />
+                        <Experience />
                     </Suspense>
                 </Canvas>
-            </section>
+            </div>
         </>
     )
 }
 
-export default Landing;
+export default Landing

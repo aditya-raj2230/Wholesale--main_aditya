@@ -1,27 +1,30 @@
 import { useProgress } from '@react-three/drei'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-export default function LoadingScreen({ onStarted }) {
-    const { progress, loaded, total } = useProgress()
+const LoadingScreen = () => {
+    const { progress } = useProgress()
+    const [show, setShow] = useState(true)
     
     useEffect(() => {
-        if (loaded === total && progress === 100) {
-            onStarted()
+        if (progress === 100) {
+            // Add a small delay for smoother transition
+            const timeout = setTimeout(() => {
+                setShow(false)
+            }, 500)
+            return () => clearTimeout(timeout)
         }
-    }, [progress, loaded, total, onStarted])
-
+    }, [progress])
+    
+    if (!show) return null
+    
     return (
-        <div className="loading-screen">
-            <div className="loading-content">
-                <h2>Loading Experience</h2>
-                <div className="progress-bar">
-                    <div 
-                        className="progress-fill"
-                        style={{ width: `${progress}%` }}
-                    ></div>
-                </div>
-                <p>{progress.toFixed(0)}%</p>
+        <div className={`loading-screen w-screen h-screen bg-pink-100 fixed top-0 left-0 flex items-center justify-center z-50 transition-opacity duration-500 ${progress === 100 ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="text-center">
+                <h1 className="text-4xl mb-4">Loading...</h1>
+                <div className="text-2xl">{Math.round(progress)}%</div>
             </div>
         </div>
     )
 }
+
+export default LoadingScreen

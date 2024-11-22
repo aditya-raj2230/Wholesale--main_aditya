@@ -1,6 +1,5 @@
 import React, { useRef, useMemo, useCallback } from 'react';
 import { useMatcapTexture, Center, Text3D, OrbitControls } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import Scene from './Scene';
 
@@ -21,83 +20,89 @@ export default function Experience() {
         bevelSegments: 5
     }), []);
 
-    // Memoize OrbitControls configuration
+    // Predefined cloud positions
+    const cloudData = useMemo(() => [
+        {
+            id: 'cloud-1',
+            position: new THREE.Vector3(-10, 2, -2),  // top left
+            scale: 0.55
+        },
+        {
+            id: 'cloud-2',
+            position: new THREE.Vector3(3, 1, -1),   // top right
+            scale: 0.65
+        },
+        {
+            id: 'cloud-3',
+            position: new THREE.Vector3(-4, -1, -3), // bottom left
+            scale: 0.60
+        },
+        {
+            id: 'cloud-4',
+            position: new THREE.Vector3(4, -2, -2),  // bottom right
+            scale: 0.75
+        },
+        {
+            id: 'cloud-5',
+            position: new THREE.Vector3(0, 0.5, -2),   // top center
+            scale: 0.67
+        },
+        {
+            id: 'cloud-6',
+            position: new THREE.Vector3(0, -2, -1),  // bottom center
+            scale: 0.6
+        },
+        {
+            id: 'cloud-7',
+            position: new THREE.Vector3(-12, -3.5, -2),  // far bottom left
+            scale: 1
+        },
+        {
+            id: 'cloud-8',
+            position: new THREE.Vector3(-12, 1, -3),  // mid left
+            scale: 1.5
+        },
+        {
+            id: 'cloud-9',
+            position: new THREE.Vector3(-6, -2, -2),  // bottom left corner
+            scale: 1
+        },
+        // {
+        //     id: 'cloud-10',
+        //     position: new THREE.Vector3(-2, -4, -1),  // bottom center-left
+        //     scale: 0.5
+        // },
+        // {
+        //     id: 'cloud-11',
+        //     position: new THREE.Vector3(-15, -2, -2), // far left
+        //     scale: 0.75
+        // },
+        // {
+        //     id: 'cloud-12',
+        //     position: new THREE.Vector3(-4, -3, -3),  // lower left
+        //     scale: 0.4
+        // }
+    ], []);
+
+    // Simplified Cloud component without motion
+    const Cloud = useCallback(({ data }) => (
+        <group 
+            position={data.position}
+        >
+            <Scene scale={data.scale} />
+        </group>
+    ), []);
+
+    // Optimize OrbitControls configuration
     const controlsConfig = useMemo(() => ({
         minPolarAngle: Math.PI / 2,
         maxPolarAngle: Math.PI / 2,
         enablePan: false,
         enableZoom: false,
-        target: [0, 0, 0]
+        target: [0, 0, 0],
+        enableDamping: false, // Disable damping for better performance
+        rotateSpeed: 0.5      // Reduce rotate speed for smoother rotation
     }), []);
-
-    // Memoize cloud data
-    const cloudData = useMemo(() => {
-        const numClouds = 5;
-        const radius = 3;
-        return Array.from({ length: numClouds }, (_, i) => ({
-            id: `cloud-${i}`,  // Add unique ID for React keys
-            position: new THREE.Vector3(
-                Math.cos((i / numClouds) * Math.PI * 2) * radius,
-                2 + Math.sin((i / numClouds) * Math.PI * 2) * 1.5,
-                Math.sin((i / numClouds) * Math.PI * 2) * radius
-            ),
-            velocity: new THREE.Vector2(
-                (Math.random() - 0.5) * 0.02,
-                (Math.random() - 0.5) * 0.02
-            ),
-            bounds: {
-                x: [-6, 6],
-                y: [-1, 3.5],
-                z: [-6, 6]
-            }
-        }));
-    }, []);
-
-    const cloudRefs = useRef([]);
-
-    // Memoize update function to reduce garbage collection
-    const updateCloud = useCallback((cloud, data, delta) => {
-        if (!cloud) return;
-
-        // Update position with velocity
-        cloud.position.x += data.velocity.x * delta * 60;
-        cloud.position.y += data.velocity.y * delta * 60;
-
-        // Optimized boundary checks
-        if (cloud.position.x <= data.bounds.x[0]) {
-            cloud.position.x = data.bounds.x[0];
-            data.velocity.x = Math.abs(data.velocity.x);
-        } else if (cloud.position.x >= data.bounds.x[1]) {
-            cloud.position.x = data.bounds.x[1];
-            data.velocity.x = -Math.abs(data.velocity.x);
-        }
-
-        if (cloud.position.y <= data.bounds.y[0]) {
-            cloud.position.y = data.bounds.y[0];
-            data.velocity.y = Math.abs(data.velocity.y);
-        } else if (cloud.position.y >= data.bounds.y[1]) {
-            cloud.position.y = data.bounds.y[1];
-            data.velocity.y = -Math.abs(data.velocity.y);
-        }
-    }, []);
-
-    // Optimized frame update
-    useFrame((state, delta) => {
-        cloudRefs.current.forEach((cloud, index) => {
-            updateCloud(cloud, cloudData[index], delta);
-        });
-    });
-
-    // Memoize cloud component
-    const Cloud = useCallback(({ data, index }) => (
-        <group 
-            key={data.id}
-            ref={el => cloudRefs.current[index] = el}
-            position={data.position}
-        >
-            <Scene scale={0.5 + Math.random() * 0.2} />
-        </group>
-    ), []);
 
     // Memoize Text component
     const TextComponent = useCallback(() => (
@@ -114,12 +119,10 @@ export default function Experience() {
 
     return (
         <>
-            {/* Render clouds */}
-            {cloudData.map((data, index) => (
+            {cloudData.map((data) => (
                 <Cloud 
                     key={data.id}
                     data={data}
-                    index={index}
                 />
             ))}
 
