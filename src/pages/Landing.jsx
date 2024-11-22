@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import Experience from '../models/Experience'
+import Experience from '../models/Experience2'
 import LoadingScreen from '../components/LoadingScreen'
 import { Preload } from '@react-three/drei'
 
@@ -9,7 +9,7 @@ const Landing = () => {
         <>
             <LoadingScreen />
             
-            <div className="w-screen h-screen bg-pink-100">
+            <div className="w-screen h-screen bg-gray-300">
                 <Canvas
                     className="w-full h-full"
                     camera={{
